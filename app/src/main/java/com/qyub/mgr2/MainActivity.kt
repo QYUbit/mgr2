@@ -6,9 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
 import com.qyub.mgr2.data.db.AppDatabase
 import com.qyub.mgr2.data.repo.EventRepository
-import com.qyub.mgr2.ui.screens.calendar.CalendarScreen
-import com.qyub.mgr2.ui.screens.calendar.CalendarViewModel
-import com.qyub.mgr2.ui.screens.calendar.CalendarViewModelFactory
+import com.qyub.mgr2.ui.screens.timeline.TimelineScreen
+import com.qyub.mgr2.ui.screens.timeline.TimelineViewModel
+import com.qyub.mgr2.ui.screens.timeline.TimelineViewModelFactory
 import com.qyub.mgr2.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,13 +18,13 @@ class MainActivity : ComponentActivity() {
         val db = AppDatabase.getInstance(applicationContext)
         val repo = EventRepository(db.eventDao())
 
-        val factory = CalendarViewModelFactory(repo)
+        val factory = TimelineViewModelFactory(repo)
 
-        val vm = ViewModelProvider(this, factory)[CalendarViewModel::class.java]
+        val vm = ViewModelProvider(this, factory)[TimelineViewModel::class.java]
 
         setContent {
             AppTheme {
-                CalendarScreen(vm)
+                TimelineScreen(vm)
             }
         }
     }

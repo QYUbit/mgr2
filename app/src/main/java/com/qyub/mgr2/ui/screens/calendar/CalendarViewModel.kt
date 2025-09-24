@@ -1,16 +1,15 @@
 package com.qyub.mgr2.ui.screens.calendar
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.qyub.mgr2.data.models.Event
 import com.qyub.mgr2.data.repo.EventRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.time.YearMonth
 
 data class CalendarUiState(
     val displayMonth: YearMonth = YearMonth.now(),
-    val eventsForMonth: Map<Long, List<com.qyub.mgr2.data.db.Event>> = emptyMap()
+    val eventsForMonth: Map<Long, List<Event>> = emptyMap()
 )
 
 class CalendarViewModel(
@@ -20,7 +19,7 @@ class CalendarViewModel(
     private val _uiState = MutableStateFlow(CalendarUiState())
     val uiState = _uiState.asStateFlow()
 
-    init {
+   /* init {
         loadMonth()
     }
 
@@ -37,5 +36,6 @@ class CalendarViewModel(
                 )
             }
         }
-    }
+    }*/
+
 }

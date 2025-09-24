@@ -5,8 +5,9 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.qyub.mgr2.data.models.Event
 
-@Database(entities = [Event::class], version = 1)
+@Database(entities = [Event::class], version = 2)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
@@ -17,7 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 Room.databaseBuilder(context.applicationContext, AppDatabase::class.java, "app_db")
-                    .fallbackToDestructiveMigration() // dev only
+                    .fallbackToDestructiveMigration(true) // dev only
                     .build()
                     .also { INSTANCE = it }
             }

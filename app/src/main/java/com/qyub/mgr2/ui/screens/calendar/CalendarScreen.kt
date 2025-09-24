@@ -13,7 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.qyub.mgr2.data.db.Event
+import com.qyub.mgr2.data.models.Event
 
 @Composable
 fun CalendarScreen(vm: CalendarViewModel) {

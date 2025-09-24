@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.qyub.mgr2.data.db.Event
+import com.qyub.mgr2.data.models.Event
 
 @Composable
 fun EventCard(event: Event) {
@@ -19,7 +19,6 @@ fun EventCard(event: Event) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(text = event.title)
-            Text(text = "Day: ${event.dateEpochDay}")
         }
     }
 }
