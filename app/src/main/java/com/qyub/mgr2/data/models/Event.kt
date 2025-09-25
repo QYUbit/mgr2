@@ -19,10 +19,10 @@ data class Event(
     val isRepeating: Boolean = false,
     val repeatOn: List<Int> = emptyList(),
 
-    val dateEpochDay: Long? = null,
+    val date: LocalDate? = null,
 
-    val startTime: Long? = null,
-    val endTime: Long? = null,
+    val startTime: LocalTime? = null,
+    val endTime: LocalTime? = null,
 
     val isException: Boolean = false,
     val exceptionParentId: Long? = null,
@@ -31,28 +31,4 @@ data class Event(
 
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
-) {
-    fun toNewEvent(): NewEvent {
-        return NewEvent(
-            title = title,
-            description = description,
-            isRepeating = isRepeating,
-            repeatOn = repeatOn,
-            date = dateEpochDay?.let { LocalDate.ofEpochDay(it) },
-            startTime = startTime?.let { LocalTime.ofSecondOfDay(it) },
-            endTime = endTime?.let { LocalTime.ofSecondOfDay(it) },
-            colorHex = colorHex
-        )
-    }
-}
-
-data class NewEvent(
-    val title: String,
-    val description: String?,
-    val isRepeating: Boolean,
-    val repeatOn: List<Int>,
-    val date: LocalDate?,
-    val startTime: LocalTime?,
-    val endTime: LocalTime?,
-    val colorHex: String?
 )

@@ -2,7 +2,6 @@ package com.qyub.mgr2.data.repo
 
 import com.qyub.mgr2.data.db.EventDao
 import com.qyub.mgr2.data.models.Event
-import com.qyub.mgr2.data.models.NewEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -32,33 +31,11 @@ class EventRepository(
         }
     }
 
-    suspend fun addEvent(input: NewEvent) {
-        val event = Event(
-            title = input.title,
-            description = input.description,
-            isRepeating = input.isRepeating,
-            repeatOn = input.repeatOn,
-            dateEpochDay = input.date?.toEpochDay(),
-            startTime = input.startTime?.toSecondOfDay()?.toLong(),
-            endTime = input.endTime?.toSecondOfDay()?.toLong(),
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
-        )
+    suspend fun addEvent(event: Event) {
         dao.insert(event)
     }
 
-    suspend fun deleteEvent(input: NewEvent) = withContext(Dispatchers.IO) {
-        val event = Event(
-            title = input.title,
-            description = input.description,
-            isRepeating = input.isRepeating,
-            repeatOn = input.repeatOn,
-            dateEpochDay = input.date?.toEpochDay(),
-            startTime = input.startTime?.toSecondOfDay()?.toLong(),
-            endTime = input.endTime?.toSecondOfDay()?.toLong(),
-            createdAt = System.currentTimeMillis(),
-            updatedAt = System.currentTimeMillis()
-        )
+    suspend fun deleteEvent(event: Event) = withContext(Dispatchers.IO) {
         dao.delete(event)
     }
 }

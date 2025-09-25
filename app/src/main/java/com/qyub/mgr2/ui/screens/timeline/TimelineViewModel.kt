@@ -3,7 +3,6 @@ package com.qyub.mgr2.ui.screens.timeline
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qyub.mgr2.data.models.Event
-import com.qyub.mgr2.data.models.NewEvent
 import com.qyub.mgr2.data.repo.EventRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,13 +35,13 @@ class TimelineViewModel(
          }
      }
 
-    fun addEvent(event: NewEvent) {
+    fun addEvent(event: Event) {
         viewModelScope.launch {
             repo.addEvent(event)
         }
     }
 
-    fun deleteEvent(event: NewEvent) {
+    fun deleteEvent(event: Event) {
         viewModelScope.launch {
             repo.deleteEvent(event)
         }

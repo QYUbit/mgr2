@@ -21,14 +21,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.qyub.mgr2.data.models.NewEvent
+import com.qyub.mgr2.data.models.Event
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventBottomSheet(
-    initialEvent: NewEvent? = null,
-    onSave: (NewEvent) -> Unit,
+    initialEvent: Event? = null,
+    onSave: (Event) -> Unit,
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)? = null
 ) {
@@ -89,7 +89,7 @@ fun EventBottomSheet(
             Button(
                 onClick = {
                     onSave(
-                        NewEvent(
+                        Event(
                             title = title,
                             description = description.ifEmpty { null },
                             isRepeating = isRepeating,
