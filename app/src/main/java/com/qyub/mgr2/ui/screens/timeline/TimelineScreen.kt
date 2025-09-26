@@ -2,6 +2,7 @@ package com.qyub.mgr2.ui.screens.timeline
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import com.qyub.mgr2.data.models.Event
 import com.qyub.mgr2.ui.components.EventBottomSheet
 import com.qyub.mgr2.ui.components.Timeline
@@ -41,10 +43,11 @@ fun TimelineScreen(vm: TimelineViewModel) {
                     eventToEdit = null
                     showSheet = true
                 },
-                containerColor = MaterialTheme.colorScheme.secondary,
-                contentColor = MaterialTheme.colorScheme.onSecondary,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape
             ) {
-                Text("+")
+                Text("+", fontSize = 24.sp)
             }
         },
         topBar = {

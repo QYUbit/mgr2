@@ -1,8 +1,13 @@
 package com.qyub.mgr2
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.ViewModelProvider
 import com.qyub.mgr2.data.db.AppDatabase
 import com.qyub.mgr2.data.repo.EventRepository
@@ -22,8 +27,24 @@ class MainActivity : ComponentActivity() {
 
         val vm = ViewModelProvider(this, factory)[TimelineViewModel::class.java]
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         setContent {
             AppTheme {
+                val isDarkTheme = isSystemInDarkTheme()
+
+                LaunchedEffect(isDarkTheme) {
+                    val controller = WindowInsetsControllerCompat(window, window.decorView)
+
+                    controller.isAppearanceLightNavigationBars = !isDarkTheme
+
+                    window.navigationBarColor = if (isDarkTheme) {
+                        Color.TRANSPARENT
+                    } else {
+                        Color.TRANSPARENT
+                    }
+                }
+
                 TimelineScreen(vm)
             }
         }

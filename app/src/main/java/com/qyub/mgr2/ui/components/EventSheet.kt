@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ModalBottomSheetProperties
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -39,7 +40,7 @@ fun EventBottomSheet(
     var startTime by remember { mutableStateOf(initialEvent?.startTime) }
     var endTime by remember { mutableStateOf(initialEvent?.endTime) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(onDismissRequest = onDismiss, properties = ModalBottomSheetProperties()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
