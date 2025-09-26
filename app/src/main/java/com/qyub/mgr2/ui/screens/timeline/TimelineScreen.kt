@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.qyub.mgr2.data.models.Event
 import com.qyub.mgr2.ui.components.EventBottomSheet
@@ -47,7 +48,7 @@ fun TimelineScreen(vm: TimelineViewModel) {
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
             ) {
-                Text("+", fontSize = 24.sp)
+                Text("+", fontSize = 30.sp, fontWeight = FontWeight.Light)
             }
         },
         topBar = {
@@ -74,7 +75,6 @@ fun TimelineScreen(vm: TimelineViewModel) {
                 },
                 isCurrentDay = state.displayDay == LocalDate.now()
             )
-
 
             if (showSheet) {
                 EventBottomSheet(

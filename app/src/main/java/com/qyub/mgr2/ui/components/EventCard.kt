@@ -1,6 +1,7 @@
 package com.qyub.mgr2.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,17 +33,7 @@ fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
                 } ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = MaterialTheme.shapes.small
             )
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val eventInput = awaitPointerEvent()
-                        if (eventInput.changes.any { it.pressed }) {
-                            onClick(event.event)
-                            break
-                        }
-                    }
-                }
-            },
+            .clickable { onClick(event.event) },
         contentAlignment = Alignment.TopStart
     ) {
         Column (
