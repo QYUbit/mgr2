@@ -13,7 +13,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,9 +27,7 @@ fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
             .fillMaxWidth(0.95f)
             .height(event.height.dp)
             .background(
-                color = event.event.colorHex?.let {
-                    Color(android.graphics.Color.parseColor(it))
-                } ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                color = event.event.color ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = MaterialTheme.shapes.small
             )
             .clickable { onClick(event.event) },
@@ -39,13 +36,16 @@ fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
         Column (
             modifier = Modifier.padding(if (event.height <= 40) 6.dp else 12.dp)
         ) {
-            Text(
-                text = event.event.title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-                textAlign = TextAlign.Start,
-                fontSize = 14.sp,
-            )
+            if (event.height >= 30) {
+                Text(
+                    text = event.event.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    textAlign = TextAlign.Start,
+                    fontSize = 14.sp,
+                )
+            }
+
             if (event.height >= 60) {
                 Text(
                     text = if (event.event.startTime != null && event.event.endTime != null)

@@ -1,5 +1,6 @@
 package com.qyub.mgr2.data.models
 
+import androidx.compose.ui.graphics.Color
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -27,7 +28,7 @@ data class Event(
     val isException: Boolean = false,
     val exceptionParentId: Long? = null,
 
-    val colorHex: String? = null,
+    val color: Color? = null,
 
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

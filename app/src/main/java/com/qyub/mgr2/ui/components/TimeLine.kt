@@ -45,7 +45,7 @@ private val sampleEvents = listOf(
         description = "go shopping",
         startTime = LocalTime.of(16, 30),
         endTime = LocalTime.of(17, 0),
-        colorHex = EventColorMint
+        color = EventColorMint
     ),
     Event(
         id = 1,
@@ -53,7 +53,7 @@ private val sampleEvents = listOf(
         description = "Weekly sync with the dev team",
         startTime = LocalTime.of(10, 0),
         endTime = LocalTime.of(12, 0),
-        colorHex = EventColorSky
+        color = EventColorSky
     ),
     Event(
         id = 2,
@@ -61,15 +61,15 @@ private val sampleEvents = listOf(
         description = "Quick meal at the café",
         startTime = LocalTime.of(12, 30),
         endTime = LocalTime.of(13, 30),
-        colorHex = EventColorSun
+        color = EventColorSun
     ),
     Event(
         id = 3,
         title = "Gym Session",
         description = "Cardio and weights",
         startTime = LocalTime.of(18, 0),
-        endTime = LocalTime.of(19, 30),
-        colorHex = EventColorLavender
+        endTime = LocalTime.of(18, 10),
+        color = EventColorLavender
     ),
     Event(
         id = 4,
@@ -77,7 +77,7 @@ private val sampleEvents = listOf(
         description = "Italian restaurant reservation",
         startTime = LocalTime.of(20, 0),
         endTime = LocalTime.of(22, 0),
-        colorHex = EventColorCrimson
+        color = EventColorCrimson
     )
 )
 
@@ -94,7 +94,7 @@ fun Timeline(
     val hourHeight = 60
     val scrollState = rememberScrollState()
 
-    val uiEvents = getEventDimensions(sampleEvents)
+    val uiEvents = getEventDimensions(events)
 
     val now = LocalTime.now()
     val currentMinuteOfDay = now.hour * 60 + now.minute
@@ -180,7 +180,7 @@ fun getEventDimensions(events: List<Event>): List<UIEvent> {
     return events.map { event ->
         val startMinutes = (event.startTime?.toSecondOfDay() ?: 0) / 60
         val endMinutes = (event.endTime?.toSecondOfDay() ?: 0) / 60
-        val duration = max(endMinutes - startMinutes, 30)
+        val duration = max(endMinutes - startMinutes, 10)
 
         UIEvent(
             event = event,

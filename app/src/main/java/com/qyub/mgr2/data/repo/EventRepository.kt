@@ -23,10 +23,13 @@ class EventRepository(
         val epochDay = date.toEpochDay()
         val dayIndex = (date.dayOfWeek.value - 1) % 7
 
+        println("%$dayIndex%")
+
         return combine(
             dao.getFixedEventsForDay(epochDay),
-            dao.getRepeatingEventsForDay(dayIndex.toString())
+            dao.getRepeatingEventsForDay("%$dayIndex%")
         ) { fixed, repeating ->
+            println(repeating)
             fixed + repeating
         }
     }

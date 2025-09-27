@@ -1,15 +1,22 @@
 package com.qyub.mgr2.ui.components
 
 import android.app.TimePickerDialog
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,7 +24,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,9 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.qyub.mgr2.data.models.Event
+import com.qyub.mgr2.ui.theme.PrimaryLight
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -46,23 +56,74 @@ fun EventBottomSheet(
     var startTime by remember { mutableStateOf(initialEvent?.startTime ?: LocalTime.of(0, 0)) }
     var endTime by remember { mutableStateOf(initialEvent?.endTime ?: LocalTime.of(0, 0)) }
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
+    var color by remember { mutableStateOf(initialEvent?.color ?: PrimaryLight) }
+
+    var colorPickerOpen by remember { mutableStateOf(false) }
+
+    val modalBottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     val context = LocalContext.current
 
     ModalBottomSheet(
+        sheetState = modalBottomSheetState,
         onDismissRequest = onDismiss,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-                //.height(800.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp)
+                .heightIn(min = 500.dp, max = 600.dp)
+                .navigationBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            Text(
-                if (initialEvent == null) "Create new event" else "Edit Event",
-                style = MaterialTheme.typography.titleLarge
-            )
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                val canDelete = initialEvent != null && onDelete != null
+
+                Box(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable {
+                            // Kotlin compiler bad, so check again
+                            if (canDelete && onDelete != null) {
+                                onDelete()
+                            }
+                            onDismiss()
+                        }
+                ) {
+                    Icon(
+                        if (canDelete) Icons.Default.Delete else Icons.Default.Close,
+                        contentDescription = if (canDelete) "Delete Event" else "Discard Changes",
+                        tint = if (canDelete) Color.Red else MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                Text(
+                    if (initialEvent == null) "Create new event" else "Edit Event",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(if (initialEvent == null) "Create" else "Save",
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable {
+                        onSave(
+                            Event(
+                                title = title,
+                                description = description.ifEmpty { null },
+                                isRepeating = isRepeating,
+                                repeatOn = if (isRepeating) weekDays else emptyList(),
+                                date = if (!isRepeating) date else null,
+                                startTime = startTime,
+                                endTime = endTime,
+                                color = color
+                            )
+                        )
+                        onDismiss()
+                    }
+                )
+            }
 
             OutlinedTextField(
                 value = title,
@@ -135,43 +196,39 @@ fun EventBottomSheet(
             }
 
             if (isRepeating) {
+                Text("Repeat on", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
                 WeekdaySelection(
                     selected = weekDays.toSet(),
-                    onSelectionChange = { newDays -> weekDays = newDays.toList() }
+                    onSelectionChange = { newDays -> weekDays = newDays.toList() },
+                    chipSize = 32.dp,
                 )
             }
 
-            Button(
-                onClick = {
-                    onSave(
-                        Event(
-                            title = title,
-                            description = description.ifEmpty { null },
-                            isRepeating = isRepeating,
-                            repeatOn = initialEvent?.repeatOn ?: emptyList(),
-                            date = date,
-                            startTime = startTime,
-                            endTime = endTime,
-                            colorHex = initialEvent?.colorHex
-                        )
-                    )
-                    onDismiss()
-                },
-                modifier = Modifier.fillMaxWidth()
+            Row (
+                modifier = Modifier
+                    .clickable { colorPickerOpen = true },
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Save")
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(color)
+                )
+                Text("Event Appearance")
             }
 
-            if (initialEvent != null && onDelete != null) {
-                TextButton(
-                    onClick = {
-                        onDelete()
-                        onDismiss()
+            if (colorPickerOpen) {
+                ColorPickerDialog(
+                    selected = color,
+                    onSelect = { selected ->
+                        color = selected
+                        colorPickerOpen = false
                     },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
-                }
+                    onDismissRequest = { colorPickerOpen = false }
+                )
             }
         }
     }
