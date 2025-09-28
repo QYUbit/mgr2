@@ -2,6 +2,7 @@ package com.qyub.mgr2.ui.components
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,12 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -86,13 +85,13 @@ private val sampleEvents = listOf(
 fun Timeline(
     events: List<Event>,
     isCurrentDay: Boolean,
+    scrollState: ScrollState,
     modifier: Modifier = Modifier,
     onEventClick: (Event) -> Unit
 ) {
     val totalMinutes = 24 * 60
     val density = LocalDensity.current
     val hourHeight = 60
-    val scrollState = rememberScrollState()
 
     val uiEvents = getEventDimensions(events)
 
@@ -100,12 +99,6 @@ fun Timeline(
     val currentMinuteOfDay = now.hour * 60 + now.minute
 
     val lineColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-
-    LaunchedEffect(isCurrentDay) {
-        if (isCurrentDay) {
-            scrollState.scrollTo(currentMinuteOfDay + 700)
-        }
-    }
 
     Row(
         modifier = modifier
