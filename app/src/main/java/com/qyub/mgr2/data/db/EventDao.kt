@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import com.qyub.mgr2.data.models.Event
 import kotlinx.coroutines.flow.Flow
 
@@ -18,8 +19,12 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE isRepeating = 1 AND repeatOn LIKE :weekDay")
     fun getRepeatingEventsForDay(weekDay: String): Flow<List<Event>>
 
+    // I know that upsert exists
     @Insert
     suspend fun insert(event: Event)
+
+    @Update
+    suspend fun update(event: Event)
 
     @Delete
     suspend fun delete(event: Event)

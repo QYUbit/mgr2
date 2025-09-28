@@ -18,6 +18,7 @@ roomCompiler = "2.8.0"
 roomKtx = "2.8.0"
 roomRuntime = "2.8.0"
 activityKtx = "1.9.3"
+navigationComposeAndroid = "2.9.5"
 
 [libraries]
 androidx-compose-bom-v20240900 = { module = "androidx.compose:compose-bom", version.ref = "androidxComposeBom" }
@@ -45,6 +46,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 material3 = { module = "androidx.compose.material3:material3" }
 ui = { module = "androidx.compose.ui:ui" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
+androidx-navigation-compose-android = { group = "androidx.navigation", name = "navigation-compose-android", version.ref = "navigationComposeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

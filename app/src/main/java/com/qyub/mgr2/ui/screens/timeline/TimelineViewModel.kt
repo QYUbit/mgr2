@@ -41,6 +41,12 @@ class TimelineViewModel(
         }
     }
 
+    fun updateEvent(event: Event) {
+        viewModelScope.launch {
+            repo.updateEvent(event)
+        }
+    }
+
     fun deleteEvent(event: Event) {
         viewModelScope.launch {
             repo.deleteEvent(event)
