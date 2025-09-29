@@ -7,11 +7,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class NavigationRoutes(
     val route: String,
+    val fullRoute: String,
     val title: String,
     val icon: ImageVector
 ) {
-    data object Timeline : NavigationRoutes("timeline", "Timeline", Icons.Filled.Home)
-    data object Calendar : NavigationRoutes("calendar", "Calendar", Icons.Filled.DateRange)
+    data object Timeline : NavigationRoutes("timeline", "timeline?day={day}", "Timeline", Icons.Filled.Home)
+    data object Calendar : NavigationRoutes("calendar", "calendar", "Calendar", Icons.Filled.DateRange)
 
     companion object {
         val allRoutes by lazy { listOf(Timeline, Calendar) }

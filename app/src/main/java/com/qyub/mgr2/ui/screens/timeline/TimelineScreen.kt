@@ -1,8 +1,11 @@
 package com.qyub.mgr2.ui.screens.timeline
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -34,31 +37,41 @@ import com.qyub.mgr2.ui.components.EventBottomSheet
 import com.qyub.mgr2.ui.components.Timeline
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimelineScreen(
     vm: TimelineViewModel,
-    onMenuRequest: () -> Unit
+    onMenuRequest: () -> Unit,
+    startDay: LocalDate = LocalDate.now()
 ) {
     var showSheet by remember { mutableStateOf(false) }
     var eventToEdit by remember { mutableStateOf<Event?>(null) }
 
     val scrollState = rememberScrollState()
-    val pagerState = rememberPagerState(initialPage = Int.MAX_VALUE / 2, pageCount = { Int.MAX_VALUE })
 
-    val currentDay = LocalDate.now().plusDays(pagerState.currentPage - (Int.MAX_VALUE / 2).toLong())
+    val displayDay by vm.displayDay.collectAsState()
+    val pagerState = rememberPagerState(
+        initialPage = Int.MAX_VALUE / 2,
+        pageCount = { Int.MAX_VALUE }
+    )
+
+    val basePage = Int.MAX_VALUE / 2
+    fun pageForDay(day: LocalDate): Int =
+        basePage + ChronoUnit.DAYS.between(LocalDate.now(), day).toInt()
+    fun dayForPage(page: Int): LocalDate =
+        LocalDate.now().plusDays((page - basePage).toLong())
+
+    LaunchedEffect(startDay) {
+        vm.setDay(startDay)
+        pagerState.scrollToPage(pageForDay(startDay))
+    }
 
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.currentPage }.collect { page ->
-            when (page) {
-                0 -> {
-                    vm.showPreviousDay()
-                }
-                2 -> {
-                    vm.showNextDay()
-                }
-            }
+            val day = dayForPage(page)
+            if (day != displayDay) vm.setDay(day)
         }
     }
 
@@ -78,8 +91,13 @@ fun TimelineScreen(
         },
         topBar = {
             TopAppBar(
-                title = {
-                    Text(currentDay.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")))
+                title = { Text(displayDay.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))) },
+                navigationIcon = {
+                    IconButton(
+                        onClick = onMenuRequest
+                    ) {
+                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                    }
                 },
                 colors = TopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -88,33 +106,31 @@ fun TimelineScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = TopAppBarDefaults.topAppBarColors().actionIconContentColor
                 ),
-                navigationIcon = {
-                    IconButton(
-                        onClick = onMenuRequest
-                    ) {
-                        Icon(Icons.Filled.Menu, contentDescription = "Menu")
-                    }
-                }
-            ) 
+            )
         }
     ) { padding ->
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
+            modifier = Modifier.padding(padding).fillMaxSize(),
+            flingBehavior = PagerDefaults.flingBehavior(
+                state = pagerState,
+                snapAnimationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessVeryLow
+                )
+            )
         ) { page ->
-            val day = LocalDate.now().plusDays(page - (Int.MAX_VALUE / 2).toLong())
-            val events by vm.eventsForDateFlow(day).collectAsState(initial = emptyList())
+            val day = dayForPage(page)
+            val events by vm.eventsForDateFlow(day).collectAsState()
 
             Timeline(
                 events = events,
-                scrollState = scrollState,
-                onEventClick = { event ->
-                    eventToEdit = event
+                onEventClick = { e ->
+                    eventToEdit = e
                     showSheet = true
                 },
-                isCurrentDay = day == LocalDate.now()
+                isCurrentDay = day == LocalDate.now(),
+                scrollState = scrollState
             )
         }
 
@@ -122,16 +138,11 @@ fun TimelineScreen(
             EventBottomSheet(
                 initialEvent = eventToEdit,
                 onSave = { input ->
-                    if (eventToEdit == null) {
-                        vm.addEvent(input)
-                    } else {
-                        vm.updateEvent(input)
-                    }
-                    showSheet = false },
+                    if (eventToEdit == null) vm.addEvent(input) else vm.updateEvent(input)
+                    showSheet = false
+                },
                 onDismiss = { showSheet = false },
-                onDelete = {
-                    vm.deleteEvent(eventToEdit!!)
-                }
+                onDelete = { vm.deleteEvent(eventToEdit!!) }
             )
         }
     }
