@@ -48,7 +48,7 @@ fun AppDrawer(
                         )
                     },
                     label = { Text(route.title) },
-                    selected = currentRoute == route.route,
+                    selected = currentRoute?.contains(route.route) ?: false,
                     onClick = { onRouteSelected(route) },
                     modifier = Modifier.padding(vertical = 4.dp),
                     colors = NavigationDrawerItemDefaults.colors(

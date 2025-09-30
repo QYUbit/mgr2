@@ -30,7 +30,8 @@ import java.util.Locale
 fun Calendar(
     month: YearMonth,
     modifier: Modifier = Modifier,
-    onDayClick: (Int) -> Unit = {}
+    onDayClick: (Int) -> Unit = {},
+    isCurrentMonth: Boolean
 ) {
     val daysInMonth = month.lengthOfMonth()
     val firstDayOfWeek = month.atDay(1).dayOfWeek
@@ -86,7 +87,7 @@ fun Calendar(
                             .fillMaxHeight()
                             .padding(3.dp)
                             .background(
-                                color = if (dayNumber == currentDay) MaterialTheme.colorScheme.primary
+                                color = if (isCurrentMonth && dayNumber == currentDay) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
                                 shape = RoundedCornerShape(12.dp)
                             )
