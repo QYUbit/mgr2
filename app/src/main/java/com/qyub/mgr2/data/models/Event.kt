@@ -23,7 +23,7 @@ data class Event(
     val date: LocalDate? = null,
 
     val startTime: LocalTime? = null,
-    val endTime: LocalTime? = null,
+    val duration: Int? = null,
 
     val isException: Boolean = false,
     val exceptionParentId: Long? = null,

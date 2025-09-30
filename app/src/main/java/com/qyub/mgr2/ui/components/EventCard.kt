@@ -17,6 +17,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.qyub.mgr2.data.models.Event
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -48,8 +49,8 @@ fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
 
             if (event.height >= 60) {
                 Text(
-                    text = if (event.event.startTime != null && event.event.endTime != null)
-                        "${event.event.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${event.event.endTime.format(DateTimeFormatter.ofPattern("HH:mm"))}"
+                    text = if (event.event.startTime != null && event.event.duration != null)
+                        "${event.event.startTime.format(DateTimeFormatter.ofPattern("HH:mm"))} - ${getEventEnd(event).format(DateTimeFormatter.ofPattern("HH:mm"))}"
                     else "",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f),
@@ -59,4 +60,8 @@ fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
             }
         }
     }
+}
+
+private fun getEventEnd(event: UIEvent): LocalTime {
+    return event.event.startTime?.plusMinutes((event.event.duration ?: 0).toLong()) ?: LocalTime.of(0, 0)
 }

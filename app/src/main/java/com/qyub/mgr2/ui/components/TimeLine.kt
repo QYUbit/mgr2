@@ -43,7 +43,7 @@ private val sampleEvents = listOf(
         title = "Example",
         description = "go shopping",
         startTime = LocalTime.of(16, 30),
-        endTime = LocalTime.of(17, 0),
+        duration = 30,
         color = EventColorMint
     ),
     Event(
@@ -51,7 +51,7 @@ private val sampleEvents = listOf(
         title = "Team Meeting",
         description = "Weekly sync with the dev team",
         startTime = LocalTime.of(10, 0),
-        endTime = LocalTime.of(12, 0),
+        duration = 120,
         color = EventColorSky
     ),
     Event(
@@ -59,7 +59,7 @@ private val sampleEvents = listOf(
         title = "Lunch Break",
         description = "Quick meal at the café",
         startTime = LocalTime.of(12, 30),
-        endTime = LocalTime.of(13, 30),
+        duration = 60,
         color = EventColorSun
     ),
     Event(
@@ -67,7 +67,7 @@ private val sampleEvents = listOf(
         title = "Gym Session",
         description = "Cardio and weights",
         startTime = LocalTime.of(18, 0),
-        endTime = LocalTime.of(18, 10),
+        duration = 10,
         color = EventColorLavender
     ),
     Event(
@@ -75,7 +75,7 @@ private val sampleEvents = listOf(
         title = "Dinner with Friends",
         description = "Italian restaurant reservation",
         startTime = LocalTime.of(20, 0),
-        endTime = LocalTime.of(22, 0),
+        duration = 120,
         color = EventColorCrimson
     )
 )
@@ -172,8 +172,7 @@ fun Timeline(
 fun getEventDimensions(events: List<Event>): List<UIEvent> {
     return events.map { event ->
         val startMinutes = (event.startTime?.toSecondOfDay() ?: 0) / 60
-        val endMinutes = (event.endTime?.toSecondOfDay() ?: 0) / 60
-        val duration = max(endMinutes - startMinutes, 10)
+        val duration = max(event.duration ?: 0, 10)
 
         UIEvent(
             event = event,

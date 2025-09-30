@@ -7,21 +7,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -55,13 +59,14 @@ fun EventBottomSheet(
     var isRepeating by remember { mutableStateOf(initialEvent?.isRepeating ?: false) }
     val date by remember { mutableStateOf(initialEvent?.date ?: LocalDate.now()) }
     var startTime by remember { mutableStateOf(initialEvent?.startTime ?: LocalTime.of(0, 0)) }
-    var endTime by remember { mutableStateOf(initialEvent?.endTime ?: LocalTime.of(0, 0)) }
+    var endTime by remember { mutableStateOf(getEventEnd(initialEvent) ?: LocalTime.of(0, 0)) }
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
     var color by remember { mutableStateOf(initialEvent?.color ?: PrimaryLight) }
     var hasReminder by remember { mutableStateOf(initialEvent?.hasNotification ?: false) }
     var reminderMinutes by remember { mutableIntStateOf(initialEvent?.notificationMinutes ?: 15) }
 
     var colorPickerOpen by remember { mutableStateOf(false) }
+    var reminderPickerOpen by remember { mutableStateOf(false) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -119,8 +124,10 @@ fun EventBottomSheet(
                                 repeatOn = if (isRepeating) weekDays else emptyList(),
                                 date = if (!isRepeating) date else null,
                                 startTime = startTime,
-                                endTime = endTime,
-                                color = color
+                                duration = getDuration(startTime, endTime),
+                                color = color,
+                                hasNotification = hasReminder,
+                                notificationMinutes = reminderMinutes,
                             )
                         )
                         onDismiss()
@@ -234,12 +241,95 @@ fun EventBottomSheet(
                 )
             }
 
-            NotificationSettingsSection(
-                hasNotification = hasReminder,
-                notificationMinutes = reminderMinutes,
-                onNotificationChanged = { new -> hasReminder = new },
-                onMinutesChanged = { minutes -> reminderMinutes = minutes }
-            )
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notification",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "Reminder",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                    Switch(
+                        checked = hasReminder,
+                        onCheckedChange = { hasReminder = it }
+                    )
+                }
+
+                if (hasReminder) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { reminderPickerOpen = true }
+                            .padding(vertical = 8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Reminder",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = formatNotificationTime(reminderMinutes),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (reminderPickerOpen) {
+                NotificationTimeDialog(
+                    currentMinutes = reminderMinutes,
+                    onDismissRequest = { reminderPickerOpen = false },
+                    onSelect = { minutes ->
+                        reminderMinutes = minutes
+                        reminderPickerOpen = false
+                    }
+                )
+            }
         }
+    }
+}
+
+private fun getEventEnd(event: Event?): LocalTime? {
+    if (event == null) return null
+    return event.startTime?.plusMinutes((event.duration ?: 0).toLong())
+}
+
+private fun getDuration(start: LocalTime, end: LocalTime): Int {
+    val startMinutes = start.toSecondOfDay() / 60
+    val endMinutes = end.toSecondOfDay() / 60
+    return endMinutes - startMinutes
+}
+
+private fun formatNotificationTime(minutes: Int): String {
+    return when (minutes) {
+        0 -> "At start time"
+        in 1..59 -> "$minutes min before"
+        60 -> "1 hour before"
+        in 61..1439 -> "${minutes / 60} hours before"
+        1440 -> "1 day before"
+        else -> "${minutes / 1440} days before"
     }
 }

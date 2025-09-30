@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.qyub.mgr2.data.models.Event
 
-@Database(entities = [Event::class], version = 5)
+@Database(entities = [Event::class], version = 6)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun eventDao(): EventDao
