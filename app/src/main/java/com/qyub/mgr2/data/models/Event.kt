@@ -30,6 +30,9 @@ data class Event(
 
     val color: Color? = null,
 
+    val hasNotification: Boolean = true,
+    val notificationMinutes: Int = 15,
+
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

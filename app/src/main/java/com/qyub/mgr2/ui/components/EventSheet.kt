@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,6 +58,8 @@ fun EventBottomSheet(
     var endTime by remember { mutableStateOf(initialEvent?.endTime ?: LocalTime.of(0, 0)) }
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
     var color by remember { mutableStateOf(initialEvent?.color ?: PrimaryLight) }
+    var hasReminder by remember { mutableStateOf(initialEvent?.hasNotification ?: false) }
+    var reminderMinutes by remember { mutableIntStateOf(initialEvent?.notificationMinutes ?: 15) }
 
     var colorPickerOpen by remember { mutableStateOf(false) }
 
@@ -230,6 +233,13 @@ fun EventBottomSheet(
                     onDismissRequest = { colorPickerOpen = false }
                 )
             }
+
+            NotificationSettingsSection(
+                hasNotification = hasReminder,
+                notificationMinutes = reminderMinutes,
+                onNotificationChanged = { new -> hasReminder = new },
+                onMinutesChanged = { minutes -> reminderMinutes = minutes }
+            )
         }
     }
 }
