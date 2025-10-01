@@ -27,12 +27,11 @@ class NotificationReceiver : BroadcastReceiver() {
     private fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Event Reminders"
-            val descriptionText = "Notifications for upcoming events"
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            val descriptionText = "Standard notifications for upcoming events"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
                 enableVibration(true)
-                enableLights(true)
             }
 
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -58,12 +57,7 @@ class NotificationReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val timeText = when {
-            reminderMinutes == 0 -> "now"
-            reminderMinutes < 60 -> "in $reminderMinutes min"
-            reminderMinutes == 60 -> "in 1 hour"
-            else -> "in ${reminderMinutes / 60} hours"
-        }
+        val timeText = formatTime(reminderMinutes)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -71,7 +65,7 @@ class NotificationReceiver : BroadcastReceiver() {
             .setContentText("$timeText${if (description.isNotEmpty()) " • $description" else ""}")
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("$timeText${if (description.isNotEmpty()) "\n$description" else ""}"))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -83,5 +77,12 @@ class NotificationReceiver : BroadcastReceiver() {
 
     companion object {
         const val CHANNEL_ID = "event_reminders"
+
+        fun formatTime(minutes: Int) = when {
+            minutes == 0 -> "Now"
+            minutes < 60 -> "in $minutes min"
+            minutes == 60 -> "in 1 hour"
+            else -> "in ${minutes / 60} hours"
+        }
     }
 }

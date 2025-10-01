@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EventDao {
+    @Query("SELECT * FROM events")
+    fun allEvents(): Flow<List<Event>>
+
     @Query("SELECT * FROM events WHERE date BETWEEN :start AND :end ORDER BY date")
     fun eventsBetween(start: Long, end: Long): Flow<List<Event>>
 

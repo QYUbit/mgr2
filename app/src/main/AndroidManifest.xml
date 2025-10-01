@@ -29,8 +29,31 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".data.notifications.AlarmActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleInstance"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"/>
+
         <receiver
             android:name=".data.notifications.NotificationReceiver"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".data.notifications.AlarmReceiver"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".data.notifications.PopupReceiver"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <receiver
+            android:name=".data.notifications.AlarmDismissReceiver"
             android:enabled="true"
             android:exported="false"/>
 

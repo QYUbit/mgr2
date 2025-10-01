@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.graphics.toColorLong
 import androidx.room.TypeConverter
+import com.qyub.mgr2.data.models.NotificationType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -33,4 +34,11 @@ class Converters {
 
     @TypeConverter
     fun toColor(data: Long): Color = Color.fromColorLong(data)
+
+    @TypeConverter
+    fun fromNotificationType(type: NotificationType): String = type.name
+
+    @TypeConverter
+    fun toNotificationType(data: String): NotificationType =
+        NotificationType.valueOf(data)
 }

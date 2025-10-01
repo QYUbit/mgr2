@@ -32,6 +32,7 @@ data class Event(
 
     val hasNotification: Boolean = true,
     val notificationMinutes: Int = 15,
+    val notificationType: NotificationType = NotificationType.REMINDER,
 
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

@@ -26,6 +26,73 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.qyub.mgr2.data.models.NotificationType
+
+@Composable
+fun NotificationTypeDialog(
+    currentType: NotificationType?,
+    onSelect: (NotificationType) -> Unit,
+    onDismissRequest: () -> Unit,
+    title: String = "Select notification type"
+) {
+    val options = listOf(
+        NotificationType.REMINDER to "Reminder",
+        NotificationType.ALARM to "Alarm",
+        NotificationType.POPUP to "Popup"
+    )
+
+    Dialog(onDismissRequest = onDismissRequest) {
+        Surface(
+            shape = RoundedCornerShape(20.dp),
+            tonalElevation = 6.dp,
+            modifier = Modifier
+                .fillMaxWidth(0.92f)
+                .wrapContentHeight()
+        ) {
+            Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 8.dp)
+                )
+
+                HorizontalDivider()
+
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(vertical = 6.dp)
+                        .heightIn(max = 420.dp)
+                ) {
+                    items(options.toList()) { (type, label) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = { onSelect(type) }, role = Role.Button)
+                                .padding(horizontal = 18.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = currentType == type,
+                                onClick = {}
+                            )
+
+                            Spacer(modifier = Modifier.width(18.dp))
+
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 18.sp),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun NotificationTimeDialog(

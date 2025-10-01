@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import com.qyub.mgr2.data.models.Event
+import com.qyub.mgr2.data.models.NotificationType
 import java.time.LocalDateTime
 import java.time.ZoneId
 
@@ -26,11 +27,18 @@ class NotificationScheduler(private val context: Context) {
             .toInstant()
             .toEpochMilli()
 
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
+        val receiverClass = when (event.notificationType) {
+            NotificationType.REMINDER -> NotificationReceiver::class.java
+            NotificationType.ALARM -> AlarmReceiver::class.java
+            NotificationType.POPUP -> PopupReceiver::class.java
+        }
+
+        val intent = Intent(context, receiverClass).apply {
             putExtra("event_id", event.id)
             putExtra("event_title", event.title)
             putExtra("event_description", event.description ?: "")
             putExtra("reminder_minutes", reminderMinutes)
+            putExtra("notification_type", event.notificationType.name)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -58,17 +66,23 @@ class NotificationScheduler(private val context: Context) {
     }
 
     fun cancelNotification(eventId: Long, reminderMinutes: Int = 15) {
-        val intent = Intent(context, NotificationReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            generateRequestCode(eventId, reminderMinutes),
-            intent,
-            PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
-        )
+        listOf(
+            NotificationReceiver::class.java,
+            AlarmReceiver::class.java,
+            PopupReceiver::class.java
+        ).forEach { receiverClass ->
+            val intent = Intent(context, receiverClass)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                generateRequestCode(eventId, reminderMinutes),
+                intent,
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
 
-        pendingIntent?.let {
-            alarmManager.cancel(it)
-            it.cancel()
+            pendingIntent?.let {
+                alarmManager.cancel(it)
+                it.cancel()
+            }
         }
     }
 

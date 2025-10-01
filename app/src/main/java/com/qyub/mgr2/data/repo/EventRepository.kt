@@ -19,6 +19,10 @@ class EventRepository(
         context?.let { NotificationScheduler(it) }
     }
 
+    fun allEvents(): Flow<List<Event>> {
+        return dao.allEvents()
+    }
+
     fun eventsForDate(date: LocalDate): Flow<List<Event>> {
         val epochDay = date.toEpochDay()
         val dayIndex = (date.dayOfWeek.value - 1) % 7
