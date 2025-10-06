@@ -28,7 +28,7 @@ class NotificationReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "Event Reminders"
             val descriptionText = "Standard notifications for upcoming events"
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
                 description = descriptionText
                 enableVibration(true)
@@ -65,7 +65,7 @@ class NotificationReceiver : BroadcastReceiver() {
             .setContentText("$timeText${if (description.isNotEmpty()) " • $description" else ""}")
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("$timeText${if (description.isNotEmpty()) "\n$description" else ""}"))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

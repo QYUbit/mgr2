@@ -6,6 +6,9 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
 
     <application
         android:allowBackup="true"
@@ -35,7 +38,8 @@
             android:exported="false"
             android:launchMode="singleInstance"
             android:showWhenLocked="true"
-            android:turnScreenOn="true"/>
+            android:turnScreenOn="true"
+            android:screenOrientation="portrait"/>
 
         <receiver
             android:name=".data.notifications.NotificationReceiver"

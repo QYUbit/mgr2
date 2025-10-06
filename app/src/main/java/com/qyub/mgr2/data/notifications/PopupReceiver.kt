@@ -19,18 +19,19 @@ class PopupReceiver : BroadcastReceiver() {
 
         if (eventId == -1L) return
 
-        createPopupChannel(context)
-        showPopupNotification(context, eventId, eventTitle, eventDescription, reminderMinutes)
-
-        // Starte PopupActivity
         val popupIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION
             putExtra("event_id", eventId)
             putExtra("event_title", eventTitle)
             putExtra("event_description", eventDescription)
             putExtra("is_alarm", false)
         }
         context.startActivity(popupIntent)
+
+        createPopupChannel(context)
+        showPopupNotification(context, eventId, eventTitle, eventDescription, reminderMinutes)
     }
 
     private fun createPopupChannel(context: Context) {
@@ -68,7 +69,9 @@ class PopupReceiver : BroadcastReceiver() {
         )
 
         val fullScreenIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION
             putExtra("event_id", eventId)
             putExtra("event_title", title)
             putExtra("event_description", description)
@@ -84,7 +87,7 @@ class PopupReceiver : BroadcastReceiver() {
         val timeText = NotificationReceiver.formatTime(reminderMinutes)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
             .setContentTitle(title)
             .setContentText("$timeText${if (description.isNotEmpty()) " • $description" else ""}")
             .setStyle(NotificationCompat.BigTextStyle()
@@ -92,9 +95,10 @@ class PopupReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setFullScreenIntent(fullScreenPendingIntent, true)
-            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Schließen", dismissPendingIntent)
+            .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Close", dismissPendingIntent)
             .setAutoCancel(true)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setContentIntent(fullScreenPendingIntent)
             .build()
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

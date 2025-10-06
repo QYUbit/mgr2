@@ -21,17 +21,19 @@ class AlarmReceiver : BroadcastReceiver() {
 
         if (eventId == -1L) return
 
-        createAlarmChannel(context)
-        showAlarmNotification(context, eventId, eventTitle, eventDescription, reminderMinutes)
-
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION
             putExtra("event_id", eventId)
             putExtra("event_title", eventTitle)
             putExtra("event_description", eventDescription)
             putExtra("is_alarm", true)
         }
         context.startActivity(alarmIntent)
+
+        createAlarmChannel(context)
+        showAlarmNotification(context, eventId, eventTitle, eventDescription, reminderMinutes)
     }
 
     private fun createAlarmChannel(context: Context) {
@@ -78,7 +80,9 @@ class AlarmReceiver : BroadcastReceiver() {
         )
 
         val fullScreenIntent = Intent(context, AlarmActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_NO_USER_ACTION
             putExtra("event_id", eventId)
             putExtra("event_title", title)
             putExtra("event_description", description)
@@ -104,8 +108,9 @@ class AlarmReceiver : BroadcastReceiver() {
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setOngoing(true)
             .setAutoCancel(false)
-            .addAction(android.R.drawable.ic_delete, "Cancel", dismissPendingIntent)
+            .addAction(android.R.drawable.ic_delete, "Dismiss", dismissPendingIntent)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setContentIntent(fullScreenPendingIntent)
             .build()
 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
