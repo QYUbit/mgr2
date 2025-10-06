@@ -64,12 +64,11 @@ fun EventBottomSheet(
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
     var color by remember { mutableStateOf(initialEvent?.color ?: PrimaryLight) }
     var hasReminder by remember { mutableStateOf(initialEvent?.hasNotification ?: false) }
-    var reminderType by remember { mutableStateOf(initialEvent?.notificationType ?: NotificationType.REMINDER) }
+    val reminderType by remember { mutableStateOf(initialEvent?.notificationType ?: NotificationType.REMINDER) }
     var reminderMinutes by remember { mutableIntStateOf(initialEvent?.notificationMinutes ?: 15) }
 
     var colorPickerOpen by remember { mutableStateOf(false) }
     var reminderPickerOpen by remember { mutableStateOf(false) }
-    var showTypeDialog by remember { mutableStateOf(false) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -279,31 +278,6 @@ fun EventBottomSheet(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { showTypeDialog = true }
-                            .padding(vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = "Notification type",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            Text(
-                                text = formatNotificationType(reminderType),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
                             .clickable { reminderPickerOpen = true }
                             .padding(vertical = 8.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
@@ -326,17 +300,6 @@ fun EventBottomSheet(
                         }
                     }
                 }
-            }
-
-            if (showTypeDialog) {
-                NotificationTypeDialog(
-                    currentType = reminderType,
-                    onDismissRequest = { showTypeDialog = false },
-                    onSelect = { type ->
-                        reminderType = type
-                        showTypeDialog = false
-                    }
-                )
             }
 
             if (reminderPickerOpen) {
@@ -362,14 +325,6 @@ private fun getDuration(start: LocalTime, end: LocalTime): Int {
     val startMinutes = start.toSecondOfDay() / 60
     val endMinutes = end.toSecondOfDay() / 60
     return endMinutes - startMinutes
-}
-
-private fun formatNotificationType(type: NotificationType): String {
-    return when (type) {
-        NotificationType.REMINDER -> "Reminder"
-        NotificationType.ALARM -> "Alarm"
-        NotificationType.POPUP -> "Popup"
-    }
 }
 
 private fun formatNotificationTime(minutes: Int): String {
