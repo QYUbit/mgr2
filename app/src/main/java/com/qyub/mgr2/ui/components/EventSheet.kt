@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +55,7 @@ import java.time.LocalTime
 @Composable
 fun EventBottomSheet(
     initialEvent: Event? = null,
+    currentDate: LocalDate = LocalDate.now(),
     onSave: (Event) -> Unit,
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)? = null
@@ -58,7 +63,7 @@ fun EventBottomSheet(
     var title by remember { mutableStateOf(initialEvent?.title ?: "") }
     var description by remember { mutableStateOf(initialEvent?.description ?: "") }
     var isRepeating by remember { mutableStateOf(initialEvent?.isRepeating ?: false) }
-    val date by remember { mutableStateOf(initialEvent?.date ?: LocalDate.now()) }
+    var date by remember { mutableStateOf(initialEvent?.date ?: currentDate) }
     var startTime by remember { mutableStateOf(initialEvent?.startTime ?: LocalTime.of(0, 0)) }
     var endTime by remember { mutableStateOf(getEventEnd(initialEvent) ?: LocalTime.of(0, 0)) }
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
@@ -67,8 +72,9 @@ fun EventBottomSheet(
     val reminderType by remember { mutableStateOf(initialEvent?.notificationType ?: NotificationType.REMINDER) }
     var reminderMinutes by remember { mutableIntStateOf(initialEvent?.notificationMinutes ?: 15) }
 
+    var datePickerOpen by remember { mutableStateOf(false) }
     var colorPickerOpen by remember { mutableStateOf(false) }
-    var reminderPickerOpen by remember { mutableStateOf(false) }
+    var notificationTimePickerOpen by remember { mutableStateOf(false) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -162,13 +168,21 @@ fun EventBottomSheet(
                 Switch(checked = isRepeating, onCheckedChange = { isRepeating = it })
             }
 
-            if (!isRepeating) {
+            if (isRepeating) {
+                Text("Repeat on", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                WeekdaySelection(
+                    selected = weekDays.toSet(),
+                    onSelectionChange = { newDays -> weekDays = newDays.toList() },
+                    chipSize = 32.dp,
+                )
+            } else {
                 OutlinedTextField(
                     value = date.toString(),
                     onValueChange = {},
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    //.clickable { datePickerDialog.show() },
+                        .fillMaxWidth()
+                        .clickable { datePickerOpen = true },
                     enabled = false,
                     label = { Text("Date") },
                     trailingIcon = {
@@ -177,6 +191,37 @@ fun EventBottomSheet(
                 )
             }
 
+            if (datePickerOpen) {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = date.toEpochDay() * 86_400_000 // 24 * 60 * 60 * 1000
+                )
+
+                DatePickerDialog(
+                    onDismissRequest = {
+                        datePickerOpen = false
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerOpen = false
+                                val selected = datePickerState.selectedDateMillis
+                                if (selected != null) {
+                                    date = LocalDate.ofEpochDay(selected / 86_400_000)
+                                }
+                            },
+                        ) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { datePickerOpen = false }) { Text("Cancel") }
+                    },
+                ) {
+                    DatePicker(state = datePickerState)
+                }
+            }
+
+            // Use compose
             fun openTimePicker(initial: LocalTime, onTimeSelected: (LocalTime) -> Unit) {
                 TimePickerDialog(
                     context,
@@ -206,16 +251,6 @@ fun EventBottomSheet(
                         .clickable { openTimePicker(endTime) { endTime = it } },
                     enabled = false,
                     label = { Text("End time") }
-                )
-            }
-
-            if (isRepeating) {
-                Text("Repeat on", color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-                WeekdaySelection(
-                    selected = weekDays.toSet(),
-                    onSelectionChange = { newDays -> weekDays = newDays.toList() },
-                    chipSize = 32.dp,
                 )
             }
 
@@ -278,7 +313,7 @@ fun EventBottomSheet(
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { reminderPickerOpen = true }
+                            .clickable { notificationTimePickerOpen = true }
                             .padding(vertical = 8.dp),
                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                         shape = MaterialTheme.shapes.medium
@@ -302,13 +337,13 @@ fun EventBottomSheet(
                 }
             }
 
-            if (reminderPickerOpen) {
+            if (notificationTimePickerOpen) {
                 NotificationTimeDialog(
                     currentMinutes = reminderMinutes,
-                    onDismissRequest = { reminderPickerOpen = false },
+                    onDismissRequest = { notificationTimePickerOpen = false },
                     onSelect = { minutes ->
                         reminderMinutes = minutes
-                        reminderPickerOpen = false
+                        notificationTimePickerOpen = false
                     }
                 )
             }
