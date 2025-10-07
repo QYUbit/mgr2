@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.qyub.mgr2.data.models.Event
@@ -21,11 +22,15 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun EventCard(event: UIEvent, onClick: (event: Event) -> Unit) {
+fun EventCard(
+    event: UIEvent,
+    onClick: (event: Event) -> Unit,
+    fullWidth: Dp
+) {
     Box(
         modifier = Modifier
-            .offset(y = event.top.dp)
-            .fillMaxWidth(0.95f)
+            .offset(x = fullWidth.times(event.left), y = event.top.dp)
+            .fillMaxWidth(event.width)
             .height(event.height.dp)
             .background(
                 color = event.event.color ?: MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),

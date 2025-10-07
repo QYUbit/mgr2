@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,11 +31,14 @@ import com.qyub.mgr2.ui.theme.EventColorSky
 import com.qyub.mgr2.ui.theme.EventColorSun
 import java.time.LocalTime
 import kotlin.math.max
+import kotlin.math.min
 
 data class UIEvent(
     val event: Event,
     val top: Int,
     val height: Int,
+    val left: Float,
+    val width: Float
 )
 
 private val sampleEvents = listOf(
@@ -128,7 +132,7 @@ fun Timeline(
             }
         }
 
-        Box(
+        BoxWithConstraints (
             modifier = Modifier
                 .weight(1f)
                 .height(totalMinutes.dp)
@@ -146,7 +150,11 @@ fun Timeline(
             }
 
             uiEvents.forEach { event ->
-                EventCard(event = event, onClick = { onEventClick(event.event) })
+                EventCard(
+                    event = event,
+                    onClick = { onEventClick(event.event) },
+                    fullWidth = maxWidth
+                )
             }
 
             Canvas(modifier = Modifier.fillMaxSize()) {
@@ -170,14 +178,75 @@ fun Timeline(
 }
 
 fun getEventDimensions(events: List<Event>): List<UIEvent> {
-    return events.map { event ->
-        val startMinutes = (event.startTime?.toSecondOfDay() ?: 0) / 60
-        val duration = max(event.duration ?: 0, 10)
+    val minDuration = 10
+    val minutesInDay = 24 * 60
 
-        UIEvent(
-            event = event,
-            top = startMinutes,
-            height = duration
-        )
+    data class Enriched(val event: Event, val startMin: Int, val endMin: Int)
+
+    val enriched = events.mapNotNull { ev ->
+        val start = ev.startTime ?: return@mapNotNull null
+        val dur = max(ev.duration ?: minDuration, minDuration)
+        val startMin = start.toSecondOfDay() / 60
+        val endMin = min(startMin + dur, minutesInDay)
+        Enriched(ev, startMin, endMin)
+    }.sortedWith(compareBy({ it.startMin }, { it.endMin }))
+
+    if (enriched.isEmpty()) return emptyList()
+
+    val groups = mutableListOf<MutableList<Enriched>>()
+    var currentGroup = mutableListOf<Enriched>()
+    var currentGroupMaxEnd = -1
+    for (e in enriched) {
+        if (currentGroup.isEmpty()) {
+            currentGroup.add(e)
+            currentGroupMaxEnd = e.endMin
+        } else {
+            if (e.startMin < currentGroupMaxEnd) {
+                currentGroup.add(e)
+                if (e.endMin > currentGroupMaxEnd) currentGroupMaxEnd = e.endMin
+            } else {
+                groups.add(currentGroup)
+                currentGroup = mutableListOf(e)
+                currentGroupMaxEnd = e.endMin
+            }
+        }
     }
+    if (currentGroup.isNotEmpty()) groups.add(currentGroup)
+
+    val result = mutableListOf<UIEvent>()
+    for (group in groups) {
+        val columnEndTimes = mutableListOf<Int>()
+        val assignment = mutableMapOf<Enriched, Int>()
+
+        val byStartThenEnd = group.sortedWith(compareBy({ it.startMin }, { it.endMin }))
+        for (e in byStartThenEnd) {
+            var placedIndex = -1
+            for (i in columnEndTimes.indices) {
+                if (e.startMin >= columnEndTimes[i]) {
+                    placedIndex = i
+                    columnEndTimes[i] = e.endMin
+                    break
+                }
+            }
+            if (placedIndex == -1) {
+                columnEndTimes.add(e.endMin)
+                placedIndex = columnEndTimes.lastIndex
+            }
+            assignment[e] = placedIndex
+        }
+
+        val columnsCount = max(columnEndTimes.size, 1)
+        val baseWidth = 1f / columnsCount
+
+        for ((i, e) in group.withIndex()) {
+            val col = assignment[e] ?: 0
+            val left = col * baseWidth
+            val top = e.startMin
+            val height = max(e.endMin - e.startMin, minDuration)
+            val width = if (i == group.size - 1) baseWidth - 0.05f else baseWidth - 0.01f
+            result.add(UIEvent(e.event, top, height, left, width))
+        }
+    }
+
+    return result
 }
