@@ -9,6 +9,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.qyub.mgr2.MainActivity
+import com.qyub.mgr2.R
 
 class NotificationReceiver : BroadcastReceiver() {
 
@@ -66,9 +67,9 @@ class NotificationReceiver : BroadcastReceiver() {
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.clock_lines)
             .setContentTitle(title)
-            .setContentText("$timeText${if (description.isNotEmpty()) " • $description" else ""}")
+            .setContentText(timeText)
             .setStyle(NotificationCompat.BigTextStyle()
                 .bigText("$timeText${if (description.isNotEmpty()) "\n$description" else ""}"))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -82,6 +83,6 @@ class NotificationReceiver : BroadcastReceiver() {
     }
 
     companion object {
-        const val CHANNEL_ID = "event_reminders"
+        const val CHANNEL_ID = "event_reminders_v2"
     }
 }

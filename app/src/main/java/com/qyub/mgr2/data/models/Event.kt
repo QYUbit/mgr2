@@ -22,6 +22,7 @@ data class Event(
 
     val date: LocalDate? = null,
 
+    val isAllDay: Boolean = false,
     val startTime: LocalTime? = null,
     val duration: Int? = null,
 
@@ -32,7 +33,7 @@ data class Event(
 
     val hasNotification: Boolean = true,
     val notificationMinutes: Int = 15,
-    val notificationType: NotificationType = NotificationType.REMINDER,
+    val notificationType: NotificationType = NotificationType.REMINDER, // Unused for now
 
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()

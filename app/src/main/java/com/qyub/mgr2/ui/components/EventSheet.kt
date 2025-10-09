@@ -64,6 +64,7 @@ fun EventBottomSheet(
     var description by remember { mutableStateOf(initialEvent?.description ?: "") }
     var isRepeating by remember { mutableStateOf(initialEvent?.isRepeating ?: false) }
     var date by remember { mutableStateOf(initialEvent?.date ?: currentDate) }
+    var isAllDay by remember { mutableStateOf(initialEvent?.isAllDay ?: false) }
     var startTime by remember { mutableStateOf(initialEvent?.startTime ?: LocalTime.of(0, 0)) }
     var endTime by remember { mutableStateOf(getEventEnd(initialEvent) ?: LocalTime.of(0, 0)) }
     var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
@@ -132,10 +133,11 @@ fun EventBottomSheet(
                                 isRepeating = isRepeating,
                                 repeatOn = if (isRepeating) weekDays else emptyList(),
                                 date = if (!isRepeating) date else null,
-                                startTime = startTime,
-                                duration = getDuration(startTime, endTime),
+                                isAllDay = isAllDay,
+                                startTime = if (isAllDay) null else startTime,
+                                duration = if (isAllDay) null else getDuration(startTime, endTime),
                                 color = color,
-                                hasNotification = hasReminder,
+                                hasNotification = if (isAllDay) false else hasReminder,
                                 notificationType = reminderType,
                                 notificationMinutes = reminderMinutes,
                             )
@@ -186,7 +188,7 @@ fun EventBottomSheet(
                     enabled = false,
                     label = { Text("Date") },
                     trailingIcon = {
-                        Icon(Icons.Default.DateRange, contentDescription = "Pick end time")
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
                     }
                 )
             }
@@ -221,6 +223,15 @@ fun EventBottomSheet(
                 }
             }
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Is all-day?")
+                Switch(checked = isAllDay, onCheckedChange = { isAllDay = it })
+            }
+
             // Use compose
             fun openTimePicker(initial: LocalTime, onTimeSelected: (LocalTime) -> Unit) {
                 TimePickerDialog(
@@ -232,26 +243,28 @@ fun EventBottomSheet(
                 ).show()
             }
 
-            Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Absolute.SpaceBetween) {
-                OutlinedTextField(
-                    value = startTime.toString(),
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth(0.4f)
-                        .clickable { openTimePicker(startTime) { startTime = it } },
-                    enabled = false,
-                    label = { Text("Start time") }
-                )
+            if (!isAllDay) {
+                Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Absolute.SpaceBetween) {
+                    OutlinedTextField(
+                        value = startTime.toString(),
+                        onValueChange = {},
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .clickable { openTimePicker(startTime) { startTime = it } },
+                        enabled = false,
+                        label = { Text("Start time") }
+                    )
 
-                OutlinedTextField(
-                    value = endTime.toString(),
-                    onValueChange = {},
-                    modifier = Modifier
-                        .fillMaxWidth(0.7f)
-                        .clickable { openTimePicker(endTime) { endTime = it } },
-                    enabled = false,
-                    label = { Text("End time") }
-                )
+                    OutlinedTextField(
+                        value = endTime.toString(),
+                        onValueChange = {},
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .clickable { openTimePicker(endTime) { endTime = it } },
+                        enabled = false,
+                        label = { Text("End time") }
+                    )
+                }
             }
 
             Row (
@@ -281,35 +294,37 @@ fun EventBottomSheet(
             }
 
             Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
+                if (!isAllDay) {
                     Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Notifications,
-                            contentDescription = "Notification",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "Reminder",
-                            style = MaterialTheme.typography.bodyLarge
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Notifications,
+                                contentDescription = "Notification",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                text = "Reminder",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                        Switch(
+                            checked = hasReminder,
+                            onCheckedChange = { hasReminder = it }
                         )
                     }
-                    Switch(
-                        checked = hasReminder,
-                        onCheckedChange = { hasReminder = it }
-                    )
                 }
 
-                if (hasReminder) {
+                if (hasReminder && !isAllDay) {
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()

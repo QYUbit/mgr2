@@ -99,6 +99,13 @@ fun TimelineScreen(
                         Icon(Icons.Filled.Menu, contentDescription = "Menu")
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {}
+                    ) {
+                        //Icon(R.drawable.collection)
+                    }
+                },
                 colors = TopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     scrolledContainerColor = TopAppBarDefaults.topAppBarColors().scrolledContainerColor,
@@ -137,6 +144,7 @@ fun TimelineScreen(
         if (showSheet) {
             EventBottomSheet(
                 initialEvent = eventToEdit,
+                currentDate = displayDay,
                 onSave = { input ->
                     if (eventToEdit == null) vm.addEvent(input) else vm.updateEvent(input)
                     showSheet = false
