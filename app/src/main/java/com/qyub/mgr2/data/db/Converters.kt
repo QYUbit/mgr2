@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.graphics.toColorLong
 import androidx.room.TypeConverter
 import com.qyub.mgr2.data.models.NotificationType
+import com.qyub.mgr2.data.models.RepeatType
 import java.time.LocalDate
 import java.time.LocalTime
 
@@ -41,4 +42,11 @@ class Converters {
     @TypeConverter
     fun toNotificationType(data: String): NotificationType =
         NotificationType.valueOf(data)
+
+    @TypeConverter
+    fun fromRepeatType(type: RepeatType): String = type.name
+
+    @TypeConverter
+    fun toRepeatType(data: String): RepeatType =
+        RepeatType.valueOf(data)
 }

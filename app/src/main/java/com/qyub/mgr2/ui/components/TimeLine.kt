@@ -3,23 +3,16 @@ package com.qyub.mgr2.ui.components
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -103,7 +96,6 @@ fun Timeline(
     val density = LocalDensity.current
     val hourHeight = 60
 
-    val allDayEvents = getAllDayEvents(events)
     val uiEvents = getEventDimensions(events)
 
     val now = LocalTime.now()
@@ -111,96 +103,72 @@ fun Timeline(
 
     val lineColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
 
-    Column(
+    Row(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(scrollState)
+            .padding(vertical = 10.dp)
     ) {
-        LazyRow(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(horizontal = 8.dp)
+                .wrapContentWidth()
+                .height((24 * hourHeight).dp)
         ) {
-            items(allDayEvents) { ev ->
-                EventCard(
-                    event = ev,
-                    onClick = { },
-                    fullWidth = 200.dp
-                )
+            for (hour in 0..23) {
+                Box(
+                    modifier = Modifier
+                        .height(hourHeight.dp)
+                        .width(56.dp),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Text(
+                        text = String.format("%02d:00", hour),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         }
 
-        HorizontalDivider(color = lineColor)
-
-        Row(
+        BoxWithConstraints (
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(vertical = 10.dp)
+                .weight(1f)
+                .height(totalMinutes.dp)
+                .padding(top = 8.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .wrapContentWidth()
-                    .height((24 * hourHeight).dp)
-            ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
                 for (hour in 0..23) {
-                    Box(
-                        modifier = Modifier
-                            .height(hourHeight.dp)
-                            .width(56.dp),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        Text(
-                            text = String.format("%02d:00", hour),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    val y = with(density) { (hour * 60).dp.toPx() }
+                    drawLine(
+                        color = lineColor,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y)
+                    )
                 }
             }
 
-            BoxWithConstraints (
-                modifier = Modifier
-                    .weight(1f)
-                    .height(totalMinutes.dp)
-                    .padding(top = 8.dp)
-            ) {
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    for (hour in 0..23) {
-                        val y = with(density) { (hour * 60).dp.toPx() }
-                        drawLine(
-                            color = lineColor,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y)
-                        )
-                    }
-                }
+            uiEvents.forEach { event ->
+                EventCard(
+                    event = event,
+                    onClick = { onEventClick(event.event) },
+                    fullWidth = maxWidth
+                )
+            }
 
-                uiEvents.forEach { event ->
-                    EventCard(
-                        event = event,
-                        onClick = { onEventClick(event.event) },
-                        fullWidth = maxWidth
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                if (isCurrentDay) {
+                    val y = with(density) { currentMinuteOfDay.toFloat().dp.toPx() }
+                    drawLine(
+                        color = Color.Red,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = 8f
                     )
-                }
-
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    if (isCurrentDay) {
-                        val y = with(density) { currentMinuteOfDay.toFloat().dp.toPx() }
-                        drawLine(
-                            color = Color.Red,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = 8f
-                        )
-                        drawCircle(
-                            color = Color.Red,
-                            radius = 16f,
-                            center = Offset(0f, y)
-                        )
-                    }
+                    drawCircle(
+                        color = Color.Red,
+                        radius = 16f,
+                        center = Offset(0f, y)
+                    )
                 }
             }
         }

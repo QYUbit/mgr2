@@ -16,11 +16,8 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE date BETWEEN :start AND :end ORDER BY date")
     fun eventsBetween(start: Long, end: Long): Flow<List<Event>>
 
-    @Query("SELECT * FROM events WHERE isRepeating = 0 AND date = :targetDate")
-    fun getFixedEventsForDay(targetDate: Long): Flow<List<Event>>
-
-    @Query("SELECT * FROM events WHERE isRepeating = 1 AND repeatOn LIKE :weekDay")
-    fun getRepeatingEventsForDay(weekDay: String): Flow<List<Event>>
+    @Query("SELECT * FROM events WHERE isRepeating = 1 OR date = :targetDate")
+    fun getEventsForDate(targetDate: Long): Flow<List<Event>>
 
     // I know that upsert exists
     @Insert

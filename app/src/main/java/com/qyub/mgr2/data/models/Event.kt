@@ -18,7 +18,8 @@ data class Event(
     val description: String? = null,
 
     val isRepeating: Boolean = false,
-    val repeatOn: List<Int> = emptyList(),
+    val repeatFor: RepeatType = RepeatType.NONE,
+    val repeatAt: List<Int>? = null,
 
     val date: LocalDate? = null,
 
@@ -38,3 +39,29 @@ data class Event(
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )
+
+fun Event.isActiveAtDate(targetDate: LocalDate = LocalDate.now()): Boolean {
+    if (!isRepeating) return date == targetDate
+
+    return when (repeatFor) {
+        RepeatType.DAILY -> true
+
+        RepeatType.WEEK_DAY -> {
+            val todayIndex = targetDate.dayOfWeek.value - 1
+            repeatAt?.contains(todayIndex) == true
+        }
+
+        RepeatType.MONTH_DAY -> {
+            val todayDay = targetDate.dayOfMonth
+            repeatAt?.contains(todayDay) == true
+        }
+
+        RepeatType.YEAR_DAY -> {
+            val month = targetDate.monthValue
+            val day = targetDate.dayOfMonth
+            repeatAt?.let { it.size == 2 && it[0] == month && it[1] == day } == true
+        }
+
+        RepeatType.NONE -> false
+    }
+}

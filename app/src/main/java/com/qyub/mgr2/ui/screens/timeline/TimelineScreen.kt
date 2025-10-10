@@ -2,8 +2,14 @@ package com.qyub.mgr2.ui.screens.timeline
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.rememberPagerState
@@ -13,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,10 +38,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.qyub.mgr2.data.models.Event
 import com.qyub.mgr2.ui.components.EventBottomSheet
+import com.qyub.mgr2.ui.components.EventCard
 import com.qyub.mgr2.ui.components.Timeline
+import com.qyub.mgr2.ui.components.getAllDayEvents
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -129,16 +139,42 @@ fun TimelineScreen(
         ) { page ->
             val day = dayForPage(page)
             val events by vm.eventsForDateFlow(day).collectAsState()
+            val allDayEvents = getAllDayEvents(events)
 
-            Timeline(
-                events = events,
-                onEventClick = { e ->
-                    eventToEdit = e
-                    showSheet = true
-                },
-                isCurrentDay = day == LocalDate.now(),
-                scrollState = scrollState
-            )
+            Column {
+                if (allDayEvents.isNotEmpty()) {
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    ) {
+                        items(allDayEvents) { ev ->
+                            EventCard(
+                                event = ev,
+                                onClick = {
+                                    eventToEdit = ev.event
+                                    showSheet = true
+                                },
+                                fullWidth = 200.dp
+                            )
+                        }
+                    }
+
+                    HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
+                }
+
+                Timeline(
+                    events = events,
+                    onEventClick = { ev ->
+                        eventToEdit = ev
+                        showSheet = true
+                    },
+                    isCurrentDay = day == LocalDate.now(),
+                    scrollState = scrollState
+                )
+            }
         }
 
         if (showSheet) {

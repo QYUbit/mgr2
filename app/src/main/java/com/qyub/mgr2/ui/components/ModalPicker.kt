@@ -28,23 +28,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 
 @Composable
-fun NotificationTimeDialog(
-    currentMinutes: Int?,
-    onSelect: (Int) -> Unit,
+fun <T> ModalPicker(
+    options: List<Pair<T, String>>,
+    currentValue: T?,
+    onSelect: (T) -> Unit,
     onDismissRequest: () -> Unit,
-    title: String = "Select reminder"
+    title: String = "Pick an option"
 ) {
-    val options = listOf(
-        0 to "At start time",
-        5 to "5 minutes before",
-        10 to "10 minutes before",
-        15 to "15 minutes before",
-        30 to "30 minutes before",
-        60 to "1 hour before",
-        120 to "2 hours before",
-        1440 to "1 day before"
-    )
-
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             shape = RoundedCornerShape(20.dp),
@@ -68,17 +58,17 @@ fun NotificationTimeDialog(
                         .padding(vertical = 6.dp)
                         .heightIn(max = 420.dp)
                 ) {
-                    items(options.toList()) { (minutes, label) ->
+                    items(options.toList()) { (value, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable(onClick = { onSelect(minutes) }, role = Role.Button)
+                                .clickable(onClick = { onSelect(value) }, role = Role.Button)
                                 .padding(horizontal = 18.dp, vertical = 0.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             RadioButton(
-                                selected = currentMinutes == minutes,
-                                onClick = { onSelect(minutes) }
+                                selected = currentValue == value,
+                                onClick = { onSelect(value) }
                             )
 
                             Spacer(modifier = Modifier.width(18.dp))

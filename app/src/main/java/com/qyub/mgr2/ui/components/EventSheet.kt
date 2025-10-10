@@ -47,9 +47,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.qyub.mgr2.data.models.Event
 import com.qyub.mgr2.data.models.NotificationType
+import com.qyub.mgr2.data.models.RepeatType
 import com.qyub.mgr2.ui.theme.PrimaryLight
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.MonthDay
+
+val repeatLabels = listOf(
+    RepeatType.NONE to "Once",
+    RepeatType.DAILY to "Daily",
+    RepeatType.WEEK_DAY to "For specific week days",
+    RepeatType.MONTH_DAY to "Once a month",
+    RepeatType.YEAR_DAY to "Once a year",
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,11 +73,12 @@ fun EventBottomSheet(
     var title by remember { mutableStateOf(initialEvent?.title ?: "") }
     var description by remember { mutableStateOf(initialEvent?.description ?: "") }
     var isRepeating by remember { mutableStateOf(initialEvent?.isRepeating ?: false) }
+    var repeatType by remember { mutableStateOf(initialEvent?.repeatFor ?: RepeatType.NONE) }
+    var repeatAt by remember { mutableStateOf(initialEvent?.repeatAt) }
     var date by remember { mutableStateOf(initialEvent?.date ?: currentDate) }
     var isAllDay by remember { mutableStateOf(initialEvent?.isAllDay ?: false) }
     var startTime by remember { mutableStateOf(initialEvent?.startTime ?: LocalTime.of(0, 0)) }
     var endTime by remember { mutableStateOf(getEventEnd(initialEvent) ?: LocalTime.of(0, 0)) }
-    var weekDays by remember { mutableStateOf(initialEvent?.repeatOn ?: emptyList()) }
     var color by remember { mutableStateOf(initialEvent?.color ?: PrimaryLight) }
     var hasReminder by remember { mutableStateOf(initialEvent?.hasNotification ?: false) }
     val reminderType by remember { mutableStateOf(initialEvent?.notificationType ?: NotificationType.REMINDER) }
@@ -76,6 +87,9 @@ fun EventBottomSheet(
     var datePickerOpen by remember { mutableStateOf(false) }
     var colorPickerOpen by remember { mutableStateOf(false) }
     var notificationTimePickerOpen by remember { mutableStateOf(false) }
+    var repeatPickerOpen by remember { mutableStateOf(false) }
+    var monthDatePickerOpen by remember { mutableStateOf(false) }
+    var yearDatePickerOpen by remember { mutableStateOf(false) }
 
     val modalBottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -131,7 +145,8 @@ fun EventBottomSheet(
                                 title = title,
                                 description = description.ifEmpty { null },
                                 isRepeating = isRepeating,
-                                repeatOn = if (isRepeating) weekDays else emptyList(),
+                                repeatFor = repeatType,
+                                repeatAt = repeatAt,
                                 date = if (!isRepeating) date else null,
                                 isAllDay = isAllDay,
                                 startTime = if (isAllDay) null else startTime,
@@ -161,24 +176,47 @@ fun EventBottomSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { repeatPickerOpen = true }
+                    .padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                shape = MaterialTheme.shapes.medium
             ) {
-                Text("Repeating?")
-                Switch(checked = isRepeating, onCheckedChange = { isRepeating = it })
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Repeat: ",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        text = repeatLabels.filter { it.first == repeatType }.map { it.second }[0],
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
-            if (isRepeating) {
-                Text("Repeat on", color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-                WeekdaySelection(
-                    selected = weekDays.toSet(),
-                    onSelectionChange = { newDays -> weekDays = newDays.toList() },
-                    chipSize = 32.dp,
+            if (repeatPickerOpen) {
+                ModalPicker(
+                    options = repeatLabels,
+                    currentValue = repeatType,
+                    onDismissRequest = { repeatPickerOpen = false },
+                    onSelect = { type ->
+                        isRepeating = repeatType != RepeatType.NONE
+                        repeatType = type
+                        repeatAt = emptyList()
+                        repeatPickerOpen = false
+                    },
+                    title = "Select repeating rule"
                 )
-            } else {
+            }
+
+            if (repeatType == RepeatType.NONE) {
                 OutlinedTextField(
                     value = date.toString(),
                     onValueChange = {},
@@ -187,6 +225,46 @@ fun EventBottomSheet(
                         .clickable { datePickerOpen = true },
                     enabled = false,
                     label = { Text("Date") },
+                    trailingIcon = {
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                    }
+                )
+            }
+
+            if (repeatType == RepeatType.WEEK_DAY) {
+                Text("Repeat on", color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                WeekdaySelection(
+                    selected = repeatAt?.toSet() ?: emptySet(),
+                    onSelectionChange = { newDays -> repeatAt = newDays.toList() },
+                    chipSize = 32.dp,
+                )
+            }
+
+            if (repeatType == RepeatType.MONTH_DAY) {
+                OutlinedTextField(
+                    value = repeatAt?.joinToString(", ") { formatNumber(it) } ?: "",
+                    onValueChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { monthDatePickerOpen = true },
+                    enabled = false,
+                    label = { Text("Day of month") },
+                    trailingIcon = {
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                    }
+                )
+            }
+
+            if (repeatType == RepeatType.YEAR_DAY) {
+                OutlinedTextField(
+                    value = if (repeatAt != null && repeatAt!!.size == 2) "${repeatAt!![0]}.${repeatAt!![1]}." else "",
+                    onValueChange = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { yearDatePickerOpen = true },
+                    enabled = false,
+                    label = { Text("Day of year") },
                     trailingIcon = {
                         Icon(Icons.Default.DateRange, contentDescription = "Pick date")
                     }
@@ -221,6 +299,34 @@ fun EventBottomSheet(
                 ) {
                     DatePicker(state = datePickerState)
                 }
+            }
+
+            if (monthDatePickerOpen) {
+                MonthDateDialog(
+                    selectedDays = repeatAt ?: emptyList(),
+                    onSelect = { day ->
+                        repeatAt = emptyList()
+
+                        if (repeatAt!!.contains(day)) {
+                            repeatAt = repeatAt!!.filter { it != day }
+                        } else {
+                            repeatAt!!.plus(day)
+                        }
+
+                    },
+                    onDismissRequest = { monthDatePickerOpen = false }
+                )
+            }
+
+            if (yearDatePickerOpen) {
+                YearDateDialog(
+                    selectedDate = if (repeatAt != null && repeatAt!!.size == 2)
+                        MonthDay.of(repeatAt!![0], repeatAt!![1]) else MonthDay.now(),
+                    onSelect = { day ->
+                        repeatAt = listOf(day.monthValue, day.dayOfMonth)
+                    },
+                    onDismissRequest = { yearDatePickerOpen = false }
+                )
             }
 
             Row(
@@ -353,13 +459,24 @@ fun EventBottomSheet(
             }
 
             if (notificationTimePickerOpen) {
-                NotificationTimeDialog(
-                    currentMinutes = reminderMinutes,
+                ModalPicker(
+                    options = listOf(
+                        0 to "At start time",
+                        5 to "5 minutes before",
+                        10 to "10 minutes before",
+                        15 to "15 minutes before",
+                        30 to "30 minutes before",
+                        60 to "1 hour before",
+                        120 to "2 hours before",
+                        1440 to "1 day before"
+                    ),
+                    currentValue = reminderMinutes,
                     onDismissRequest = { notificationTimePickerOpen = false },
                     onSelect = { minutes ->
                         reminderMinutes = minutes
                         notificationTimePickerOpen = false
-                    }
+                    },
+                    title = "Select reminder"
                 )
             }
         }
@@ -385,5 +502,14 @@ private fun formatNotificationTime(minutes: Int): String {
         in 61..1439 -> "${minutes / 60} hours before"
         1440 -> "1 day before"
         else -> "${minutes / 1440} days before"
+    }
+}
+
+private fun formatNumber(number: Int): String {
+    return when (number) {
+        1 -> "1st"
+        2 -> "2nd"
+        3 -> "3rd"
+        else -> "${number}th"
     }
 }

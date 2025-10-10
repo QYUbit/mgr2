@@ -3,10 +3,11 @@ package com.qyub.mgr2.data.repo
 import android.content.Context
 import com.qyub.mgr2.data.db.EventDao
 import com.qyub.mgr2.data.models.Event
+import com.qyub.mgr2.data.models.isActiveAtDate
 import com.qyub.mgr2.data.notifications.NotificationScheduler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
@@ -24,15 +25,11 @@ class EventRepository(
     }
 
     fun eventsForDate(date: LocalDate): Flow<List<Event>> {
-        val epochDay = date.toEpochDay()
-        val dayIndex = (date.dayOfWeek.value - 1) % 7
-
-        return combine(
-            dao.getFixedEventsForDay(epochDay),
-            dao.getRepeatingEventsForDay("%$dayIndex%")
-        ) { fixed, repeating ->
-            fixed + repeating
-        }
+        return dao
+            .getEventsForDate(date.toEpochDay())
+            .map { events ->
+                events.filter { it.isActiveAtDate(date) }
+            }
     }
 
     suspend fun addEvent(event: Event) {
