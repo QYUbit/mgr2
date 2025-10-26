@@ -57,4 +57,9 @@ class EventRepository(
 
         notificationScheduler?.cancelNotification(event.id, event.notificationMinutes)
     }
+
+    suspend fun deleteAllEvents() = withContext(Dispatchers.IO) {
+        dao.deleteAll()
+        // cancel notifications
+    }
 }

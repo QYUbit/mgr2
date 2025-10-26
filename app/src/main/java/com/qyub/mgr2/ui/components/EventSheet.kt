@@ -207,7 +207,7 @@ fun EventBottomSheet(
                     currentValue = repeatType,
                     onDismissRequest = { repeatPickerOpen = false },
                     onSelect = { type ->
-                        isRepeating = repeatType != RepeatType.NONE
+                        isRepeating = type != RepeatType.NONE
                         repeatType = type
                         repeatAt = emptyList()
                         repeatPickerOpen = false

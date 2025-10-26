@@ -17,8 +17,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.qyub.mgr2.data.repo.EventRepository
 import com.qyub.mgr2.ui.components.AppDrawer
 import com.qyub.mgr2.ui.screens.calendar.CalendarScreen
+import com.qyub.mgr2.ui.screens.settings.SettingsScreen
 import com.qyub.mgr2.ui.screens.timeline.TimelineScreen
 import com.qyub.mgr2.ui.screens.timeline.TimelineViewModel
 import kotlinx.coroutines.launch
@@ -26,6 +28,7 @@ import java.time.LocalDate
 
 @Composable
 fun AppNavigation(
+    eventRepo: EventRepository,
     timelineViewModel: TimelineViewModel
 ) {
     val navController = rememberNavController()
@@ -89,6 +92,15 @@ fun AppNavigation(
                         onDateClick = { date ->
                             navController.navigate("timeline?day=$date")
                         }
+                    )
+                }
+
+                composable(NavigationRoutes.Settings.fullRoute) {
+                    SettingsScreen (
+                        repo = eventRepo,
+                        onMenuRequest = { scope.launch {
+                            drawerState.open()
+                        }},
                     )
                 }
             }

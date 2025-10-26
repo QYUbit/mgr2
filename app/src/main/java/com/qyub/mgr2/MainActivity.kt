@@ -59,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     window.navigationBarColor = Color.TRANSPARENT
                 }
 
-                AppNavigation(timelineViewModel)
+                AppNavigation(eventRepository, timelineViewModel)
             }
         }
     }
